@@ -3,269 +3,1320 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>3D Glass Background 9:16</title>
+  <title>TON Wallet Scanner</title>
+  <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
   <style>
+    :root {
+      --bg: #000000;
+      --surface: rgba(14, 16, 21, 0.9);
+      --surface-elevated: rgba(22, 25, 33, 0.92);
+      --surface-item: rgba(255, 255, 255, 0.03);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(0, 152, 234, 0.6);
+      --text: #f5f7fa;
+      --text-secondary: #8b94a5;
+      --text-muted: #565e6e;
+      --ton-blue: #0098ea;
+      --ton-blue-hover: #0086cf;
+      --positive: #10b981;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
 
-    html, body {
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 20px 14px 56px;
+    }
+
+    .app {
       width: 100%;
-      height: 100%;
-      background: #000000;
-      overflow: hidden;
+      max-width: 450px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .glass-card {
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 20px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .ton-logo {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+
+    .wallet-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s ease, border-color 0.18s ease;
+    }
+
+    .wallet-pill:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .wallet-pill.connected {
+      border-color: rgba(0, 152, 234, 0.4);
+      background: rgba(0, 152, 234, 0.1);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    .wallet-pill.connected .status-dot {
+      background: var(--ton-blue);
+      box-shadow: 0 0 8px var(--ton-blue);
+    }
+
+    .hero-desc {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+    }
+
+    /* Form */
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      letter-spacing: -0.2px;
+      margin-bottom: 5px;
+    }
+
+    .section-sub {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.45;
+      margin-bottom: 14px;
+    }
+
+    .input-group {
+      position: relative;
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    input {
+      width: 100%;
+      background: #07080b;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 42px 14px 14px;
+      color: var(--text);
+      font-size: 13.5px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    input::placeholder {
+      color: var(--text-muted);
+      font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+    }
+
+    input:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(0, 152, 234, 0.12);
+    }
+
+    .clear-btn {
+      position: absolute;
+      right: 11px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--text-secondary);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .clear-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--text);
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: var(--ton-blue);
+      color: #ffffff;
+      border: none;
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 14.5px;
+      font-weight: 600;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      gap: 8px;
+      transition: background 0.18s ease, transform 0.1s ease, opacity 0.18s ease;
     }
 
-    .stage {
+    .btn-primary:hover {
+      background: var(--ton-blue-hover);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.99);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 13px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.18s ease, border-color 0.18s ease;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+
+    .error-msg {
+      display: none;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: #fca5a5;
+      font-size: 12.5px;
+      line-height: 1.4;
+    }
+
+    .error-msg.active {
+      display: block;
+    }
+
+    /* Scanning Box */
+    .scan-box {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 14px;
+      padding: 16px;
+      border-radius: 16px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
       position: relative;
-      height: 100vh;
-      aspect-ratio: 9 / 16;
-      max-width: 100vw;
-      background: #000000;
       overflow: hidden;
     }
 
-    canvas {
-      display: block;
+    .scan-box.active {
+      display: flex;
+    }
+
+    .scan-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .scan-pct {
+      color: var(--ton-blue);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .progress-track {
       width: 100%;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
       height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #0098ea, #38bdf8);
+      border-radius: 999px;
+      transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    .hint {
-      position: fixed;
-      bottom: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: rgba(255, 255, 255, 0.32);
-      font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+    .scan-step {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .float-tag {
+      position: absolute;
+      right: 16px;
+      top: 12px;
       font-size: 11px;
-      letter-spacing: 0.4px;
+      font-weight: 600;
+      color: var(--ton-blue);
+      letter-spacing: 0.3px;
+      animation: floatFade 0.85s ease forwards;
       pointer-events: none;
-      user-select: none;
-      transition: opacity 0.4s ease;
     }
 
-    body.clean .hint {
-      opacity: 0;
+    @keyframes floatFade {
+      0% { opacity: 0; transform: translateY(6px); }
+      25% { opacity: 1; }
+      100% { opacity: 0; transform: translateY(-16px); }
+    }
+
+    /* Result Box */
+    .result-box {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 14px;
+      padding: 18px;
+      border-radius: 18px;
+      background: var(--surface-elevated);
+      border: 1px solid var(--border);
+      animation: fadeIn 0.28s ease;
+    }
+
+    .result-box.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Segmented Tabs (3 columns) */
+    .tabs {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      background: #07080b;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 3px;
+    }
+
+    .tab-pill {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: calc(33.333% - 2px);
+      height: calc(100% - 6px);
+      background: rgba(255, 255, 255, 0.09);
+      border-radius: 9px;
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+    }
+
+    .tabs[data-mode="nfts"] .tab-pill {
+      transform: translateX(100%);
+    }
+
+    .tabs[data-mode="turnover"] .tab-pill {
+      transform: translateX(200%);
+    }
+
+    .tab-btn {
+      position: relative;
+      z-index: 1;
+      background: none;
+      border: none;
+      padding: 8px 6px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: color 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn.active {
+      color: var(--text);
+    }
+
+    /* Metric Hero */
+    .metric-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .metric-label {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+    }
+
+    .metric-main {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.8px;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .metric-sub {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .mini-ton-icon {
+      width: 14px;
+      height: 14px;
+      flex-shrink: 0;
+    }
+
+    /* Breakdown Rows */
+    .rows {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      gap: 12px;
+    }
+
+    .row-label {
+      color: var(--text-secondary);
+    }
+
+    .row-val {
+      font-weight: 600;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+
+    .row-val.positive {
+      color: var(--positive);
+    }
+
+    /* NFT List */
+    .nft-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 290px;
+      overflow-y: auto;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+    }
+
+    .nft-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 9px 10px;
+      border-radius: 13px;
+      background: var(--surface-item);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .nft-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .nft-thumb {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      object-fit: cover;
+      background: #0a0c10;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .nft-thumb-fallback {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: #0a0c10;
+      border: 1px solid var(--border);
+      display: grid;
+      place-items: center;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .nft-meta {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      gap: 2px;
+    }
+
+    .nft-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nft-col {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nft-price {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      flex-shrink: 0;
+      gap: 2px;
+    }
+
+    .nft-price-ton {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .nft-price-usd {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .nft-unpriced {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 18px 10px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .meta-note {
+      font-size: 11.5px;
+      line-height: 1.45;
+      color: var(--text-muted);
     }
   </style>
 </head>
 <body>
-  <div class="stage" id="stage">
-    <canvas id="scene"></canvas>
+  <div class="app">
+    <div class="glass-card">
+      <div class="header">
+        <div class="brand">
+          <svg class="ton-logo" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="28" cy="28" r="28" fill="#0098EA"/>
+            <path d="M37.5603 15.6277H18.4386C14.9228 15.6277 12.6944 19.4202 14.4632 22.4861L26.2644 42.9409C27.0345 44.2765 28.9644 44.2765 29.7345 42.9409L41.5381 22.4861C43.3045 19.4251 41.0761 15.6277 37.5627 15.6277H37.5603ZM26.2548 36.8068L23.6847 31.8327L17.4833 20.7414C17.0742 20.0315 17.5795 19.1218 18.4362 19.1218H26.2524V36.8092L26.2548 36.8068ZM38.5108 20.739L32.3118 31.8351L29.7417 36.8068V19.1194H37.5579C38.4146 19.1194 38.9199 20.0291 38.5108 20.739Z" fill="white"/>
+          </svg>
+          <div class="brand-title">TON Scanner</div>
+        </div>
+
+        <button class="wallet-pill" id="headerConnectBtn" type="button">
+          <span class="status-dot"></span>
+          <span id="headerConnectText">Connect</span>
+        </button>
+      </div>
+      <p class="hero-desc">
+        Полный анализ адреса TON: баланс монет, оценка стоимости NFT и глубокий подсчет оборота по истории транзакций.
+      </p>
+    </div>
+
+    <div class="glass-card">
+      <div class="section-title">Проверка кошелька</div>
+      <div class="section-sub">
+        Подключите кошелек через TON Connect или вставьте любой публичный адрес (UQ / EQ) либо .ton домен.
+      </div>
+
+      <div class="input-group">
+        <input
+          id="addressInput"
+          type="text"
+          spellcheck="false"
+          autocomplete="off"
+          placeholder="UQ... / EQ... или name.ton"
+        />
+        <button class="clear-btn" id="clearBtn" type="button" title="Очистить">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <path d="M18 6L6 18M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <button class="btn-primary" id="scanBtn" type="button">
+        <span>Сканировать кошелек</span>
+      </button>
+
+      <div class="error-msg" id="errorBox"></div>
+
+      <div class="scan-box" id="scanBox">
+        <div class="scan-top">
+          <span id="scanLabel">Анализ адреса</span>
+          <span class="scan-pct" id="scanPercent">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="scan-step" id="scanStep">Подключение к сети TON...</div>
+      </div>
+
+      <div class="result-box" id="resultBox">
+        <div class="tabs" id="modeTabs" data-mode="portfolio">
+          <div class="tab-pill"></div>
+          <button class="tab-btn active" data-target="portfolio" type="button">Портфель</button>
+          <button class="tab-btn" data-target="nfts" type="button" id="nftTabBtn">NFT</button>
+          <button class="tab-btn" data-target="turnover" type="button">Оборот</button>
+        </div>
+
+        <div class="metric-block">
+          <div class="metric-label" id="metricLabel">Общая стоимость активов</div>
+          <div class="metric-main" id="metricMain">$0.00</div>
+          <div class="metric-sub">
+            <svg class="mini-ton-icon" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="28" cy="28" r="28" fill="#0098EA"/>
+              <path d="M37.5603 15.6277H18.4386C14.9228 15.6277 12.6944 19.4202 14.4632 22.4861L26.2644 42.9409C27.0345 44.2765 28.9644 44.2765 29.7345 42.9409L41.5381 22.4861C43.3045 19.4251 41.0761 15.6277 37.5627 15.6277H37.5603ZM26.2548 36.8068L23.6847 31.8327L17.4833 20.7414C17.0742 20.0315 17.5795 19.1218 18.4362 19.1218H26.2524V36.8092L26.2548 36.8068ZM38.5108 20.739L32.3118 31.8351L29.7417 36.8068V19.1194H37.5579C38.4146 19.1194 38.9199 20.0291 38.5108 20.739Z" fill="white"/>
+            </svg>
+            <span id="metricSub">0.00 TON</span>
+          </div>
+        </div>
+
+        <div id="dynamicContent"></div>
+
+        <div class="meta-note" id="metaNote"></div>
+
+        <button class="btn-secondary" id="connectBtn" type="button">
+          Подключить кошелек
+        </button>
+      </div>
+    </div>
   </div>
-  <div class="hint" id="hint">F — fullscreen · H — скрыть подсказку</div>
 
-  <script type="module">
-    import * as THREE from "https://unpkg.com/three@0.169.0/build/three.module.js";
+  <script>
+    const addressInput = document.getElementById("addressInput");
+    const clearBtn = document.getElementById("clearBtn");
+    const scanBtn = document.getElementById("scanBtn");
+    const errorBox = document.getElementById("errorBox");
+    const scanBox = document.getElementById("scanBox");
+    const scanLabel = document.getElementById("scanLabel");
+    const scanPercent = document.getElementById("scanPercent");
+    const progressFill = document.getElementById("progressFill");
+    const scanStep = document.getElementById("scanStep");
+    const resultBox = document.getElementById("resultBox");
+    const modeTabs = document.getElementById("modeTabs");
+    const tabBtns = document.querySelectorAll(".tab-btn");
+    const nftTabBtn = document.getElementById("nftTabBtn");
+    const metricLabel = document.getElementById("metricLabel");
+    const metricMain = document.getElementById("metricMain");
+    const metricSub = document.getElementById("metricSub");
+    const dynamicContent = document.getElementById("dynamicContent");
+    const metaNote = document.getElementById("metaNote");
+    const connectBtn = document.getElementById("connectBtn");
+    const headerConnectBtn = document.getElementById("headerConnectBtn");
+    const headerConnectText = document.getElementById("headerConnectText");
 
-    const stage = document.getElementById("stage");
-    const canvas = document.getElementById("scene");
-    const hint = document.getElementById("hint");
+    let currentMode = "portfolio";
+    let scanReport = null;
+    let tonConnectUI = null;
+    let connectedFriendlyAddress = null;
 
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      antialias: true,
-      powerPreference: "high-performance"
-    });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    renderer.setClearColor(0x000000, 1);
+    // Инициализация TON Connect
+    function initTonConnect() {
+      if (!window.TON_CONNECT_UI) return;
+      try {
+        const isHttp = window.location.protocol.startsWith("http");
+        const manifestUrl = isHttp
+          ? new URL("tonconnect-manifest.json", window.location.href).href
+          : "https://ton-connect.github.io/demo-dapp-with-react-ui/tonconnect-manifest.json";
 
-    const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x000000, 0.055);
+        tonConnectUI = new window.TON_CONNECT_UI.TonConnectUI({
+          manifestUrl,
+          uiPreferences: {
+            theme: window.TON_CONNECT_UI.THEME.DARK
+          }
+        });
 
-    const camera = new THREE.PerspectiveCamera(42, 9 / 16, 0.1, 100);
-    camera.position.set(0, 0.3, 7.2);
+        tonConnectUI.onStatusChange((wallet) => {
+          if (wallet && wallet.account) {
+            const raw = wallet.account.address;
+            const friendly = window.TON_CONNECT_UI.toUserFriendlyAddress
+              ? window.TON_CONNECT_UI.toUserFriendlyAddress(raw)
+              : raw;
 
-    // Освещение
-    const ambient = new THREE.AmbientLight(0x88c8ff, 0.55);
-    scene.add(ambient);
+            connectedFriendlyAddress = friendly;
+            const shortAddr = `${friendly.slice(0, 4)}...${friendly.slice(-4)}`;
 
-    const blueLight1 = new THREE.PointLight(0x0098ea, 14, 18);
-    blueLight1.position.set(-2.4, 2.2, 3.2);
-    scene.add(blueLight1);
+            headerConnectBtn.classList.add("connected");
+            headerConnectText.textContent = shortAddr;
+            connectBtn.textContent = `Отключить (${shortAddr})`;
 
-    const blueLight2 = new THREE.PointLight(0x38bdf8, 10, 16);
-    blueLight2.position.set(2.5, -2.0, 2.8);
-    scene.add(blueLight2);
-
-    const rimLight = new THREE.DirectionalLight(0xffffff, 1.1);
-    rimLight.position.set(0, 5, 4);
-    scene.add(rimLight);
-
-    // Световая волна (сетка с плавной деформацией)
-    const waveGeo = new THREE.PlaneGeometry(9.5, 9.5, 96, 96);
-    waveGeo.rotateX(-Math.PI / 2.35);
-    const basePositions = Float32Array.from(waveGeo.attributes.position.array);
-
-    const waveMat = new THREE.MeshStandardMaterial({
-      color: 0x061322,
-      emissive: 0x004b7a,
-      emissiveIntensity: 0.45,
-      roughness: 0.25,
-      metalness: 0.85,
-      wireframe: false
-    });
-    const waveMesh = new THREE.Mesh(waveGeo, waveMat);
-    waveMesh.position.set(0, -1.1, -0.5);
-    scene.add(waveMesh);
-
-    // Тонкая сетка поверх волны для глубины
-    const wireGeo = waveGeo.clone();
-    const wireMat = new THREE.MeshBasicMaterial({
-      color: 0x0098ea,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.14
-    });
-    const wireMesh = new THREE.Mesh(wireGeo, wireMat);
-    wireMesh.position.copy(waveMesh.position);
-    scene.add(wireMesh);
-
-    // Стеклянные панели (glassmorphism planes)
-    const glassGroup = new THREE.Group();
-    scene.add(glassGroup);
-
-    const glassMat = new THREE.MeshPhysicalMaterial({
-      color: 0x101824,
-      emissive: 0x001b2e,
-      emissiveIntensity: 0.25,
-      roughness: 0.12,
-      metalness: 0.1,
-      transmission: 0.55,
-      transparent: true,
-      opacity: 0.52,
-      ior: 1.48,
-      thickness: 0.4
-    });
-
-    const edgeMat = new THREE.LineBasicMaterial({
-      color: 0x38bdf8,
-      transparent: true,
-      opacity: 0.28
-    });
-
-    const panels = [];
-    const panelConfigs = [
-      { w: 2.3, h: 1.45, x: -1.15, y: 1.35, z: 0.6, rot: [0.16, 0.28, -0.06], speed: 0.65 },
-      { w: 2.6, h: 1.25, x: 1.1, y: 0.15, z: 1.1, rot: [-0.12, -0.24, 0.05], speed: 0.5 },
-      { w: 2.1, h: 1.65, x: -0.9, y: -1.35, z: 1.5, rot: [0.2, 0.18, 0.04], speed: 0.75 },
-      { w: 1.8, h: 1.05, x: 1.25, y: 1.85, z: -0.4, rot: [-0.18, -0.32, -0.04], speed: 0.45 }
-    ];
-
-    panelConfigs.forEach((cfg) => {
-      const boxGeo = new THREE.BoxGeometry(cfg.w, cfg.h, 0.05);
-      const mesh = new THREE.Mesh(boxGeo, glassMat);
-      mesh.position.set(cfg.x, cfg.y, cfg.z);
-      mesh.rotation.set(...cfg.rot);
-
-      const edges = new THREE.EdgesGeometry(boxGeo);
-      const line = new THREE.LineSegments(edges, edgeMat);
-      mesh.add(line);
-
-      glassGroup.add(mesh);
-      panels.push({ mesh, baseY: cfg.y, baseX: cfg.x, speed: cfg.speed });
-    });
-
-    // Частицы в пространстве
-    const particleCount = 180;
-    const pPositions = new Float32Array(particleCount * 3);
-    for (let i = 0; i < particleCount; i++) {
-      pPositions[i * 3] = (Math.random() - 0.5) * 7.5;
-      pPositions[i * 3 + 1] = (Math.random() - 0.5) * 9.5;
-      pPositions[i * 3 + 2] = (Math.random() - 0.5) * 5.5;
-    }
-    const pGeo = new THREE.BufferGeometry();
-    pGeo.setAttribute("position", new THREE.BufferAttribute(pPositions, 3));
-    const pMat = new THREE.PointsMaterial({
-      color: 0x38bdf8,
-      size: 0.045,
-      transparent: true,
-      opacity: 0.55
-    });
-    const particles = new THREE.Points(pGeo, pMat);
-    scene.add(particles);
-
-    function resize() {
-      const rect = stage.getBoundingClientRect();
-      const w = Math.max(1, rect.width);
-      const h = Math.max(1, rect.height);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setSize(w, h, false);
+            if (addressInput.value.trim() !== friendly) {
+              addressInput.value = friendly;
+              runScan();
+            }
+          } else {
+            connectedFriendlyAddress = null;
+            headerConnectBtn.classList.remove("connected");
+            headerConnectText.textContent = "Connect";
+            connectBtn.textContent = "Подключить кошелек";
+          }
+        });
+      } catch (e) {
+        console.warn("TON Connect init skipped:", e);
+      }
     }
 
-    resize();
-    window.addEventListener("resize", resize);
-
-    window.addEventListener("keydown", (e) => {
-      if (e.key.toLowerCase() === "f") {
-        if (!document.fullscreenElement) {
-          stage.requestFullscreen?.().catch(() => {});
-        } else {
-          document.exitFullscreen?.().catch(() => {});
-        }
-      } else if (e.key.toLowerCase() === "h") {
-        document.body.classList.toggle("clean");
+    async function handleWalletAuth() {
+      if (!tonConnectUI) {
+        errorBox.textContent = "TON Connect доступен при запуске сайта по HTTPS (например, на GitHub Pages).";
+        errorBox.classList.add("active");
+        return;
       }
+      if (tonConnectUI.connected) {
+        await tonConnectUI.disconnect();
+      } else {
+        await tonConnectUI.openModal();
+      }
+    }
+
+    headerConnectBtn.addEventListener("click", handleWalletAuth);
+    connectBtn.addEventListener("click", handleWalletAuth);
+    initTonConnect();
+
+    clearBtn.addEventListener("click", () => {
+      addressInput.value = "";
+      addressInput.focus();
     });
 
-    const clock = new THREE.Clock();
+    tabBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const mode = btn.dataset.target;
+        if (mode === currentMode) return;
+        currentMode = mode;
+        modeTabs.dataset.mode = mode;
+        tabBtns.forEach((b) => b.classList.toggle("active", b.dataset.target === mode));
+        if (scanReport) renderView(mode);
+      });
+    });
 
-    function animate() {
-      requestAnimationFrame(animate);
-      const t = clock.getElapsedTime();
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
 
-      // Деформация волны
-      const posAttr = waveGeo.attributes.position;
-      const wirePosAttr = wireGeo.attributes.position;
-      for (let i = 0; i < posAttr.count; i++) {
-        const ix = i * 3;
-        const bx = basePositions[ix];
-        const by = basePositions[ix + 1];
-        const bz = basePositions[ix + 2];
+    function spawnFloat(text) {
+      const el = document.createElement("div");
+      el.className = "float-tag";
+      el.textContent = text;
+      scanBox.appendChild(el);
+      setTimeout(() => el.remove(), 850);
+    }
 
-        const dist = Math.hypot(bx, bz);
-        const yOffset =
-          Math.sin(bx * 0.9 + t * 1.15) * 0.28 +
-          Math.cos(bz * 0.85 - t * 0.95) * 0.26 +
-          Math.sin(dist * 1.4 - t * 1.4) * 0.14;
+    function setProgress(pct, stepText, labelText = "Анализ адреса") {
+      scanLabel.textContent = labelText;
+      scanPercent.textContent = `${pct}%`;
+      progressFill.style.width = `${pct}%`;
+      scanStep.textContent = stepText;
+    }
 
-        posAttr.array[ix + 1] = by + yOffset;
-        wirePosAttr.array[ix + 1] = by + yOffset + 0.015;
+    function formatUsd(val) {
+      return `$${val.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}`;
+    }
+
+    function formatTon(val) {
+      return `${val.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 4
+      })} TON`;
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function animateValue(el, targetValue) {
+      const duration = 380;
+      const startTime = performance.now();
+      function tick(now) {
+        const progress = Math.min((now - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = formatUsd(targetValue * eased);
+        if (progress < 1) requestAnimationFrame(tick);
       }
-      posAttr.needsUpdate = true;
-      wirePosAttr.needsUpdate = true;
-      waveGeo.computeVertexNormals();
+      requestAnimationFrame(tick);
+    }
 
-      // Плавное движение стеклянных панелей
-      panels.forEach((p, idx) => {
-        p.mesh.position.y = p.baseY + Math.sin(t * p.speed + idx) * 0.18;
-        p.mesh.position.x = p.baseX + Math.cos(t * p.speed * 0.7 + idx) * 0.1;
-        p.mesh.rotation.y += 0.0015 * (idx % 2 === 0 ? 1 : -1);
+    // Получение floor price коллекций NFT через Getgems GraphQL
+    async function fetchCollectionFloors(collectionAddresses) {
+      const floorMap = new Map();
+      const unique = Array.from(new Set(collectionAddresses.filter(Boolean))).slice(0, 25);
+      if (!unique.length) return floorMap;
+
+      await Promise.all(
+        unique.map(async (colAddr) => {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 3200);
+          try {
+            const res = await fetch("https://api.getgems.io/graphql", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              signal: controller.signal,
+              body: JSON.stringify({
+                query: `query($address: String!) { alphaNftCollectionStats(address: $address) { floorPrice } }`,
+                variables: { address: colAddr }
+              })
+            });
+            if (res.ok) {
+              const json = await res.json();
+              const rawFloor = json?.data?.alphaNftCollectionStats?.floorPrice;
+              if (rawFloor !== null && rawFloor !== undefined) {
+                const num = Number(rawFloor);
+                if (!Number.isNaN(num) && num > 0) {
+                  // Если число в нанотонах — переводим в TON
+                  floorMap.set(colAddr, num > 1e6 ? num / 1e9 : num);
+                }
+              }
+            }
+          } catch (_) {
+            // Игнорируем таймаут/ошибку для отдельной коллекции
+          } finally {
+            clearTimeout(timer);
+          }
+        })
+      );
+
+      return floorMap;
+    }
+
+    async function analyzeWallet(inputAddress) {
+      const encoded = encodeURIComponent(inputAddress.trim());
+
+      setProgress(10, "Получение баланса, жетонов и списка NFT...");
+      spawnFloat("+TON");
+
+      const [accRes, jettonsRes, nftsRes, ratesRes] = await Promise.all([
+        fetch(`https://tonapi.io/v2/accounts/${encoded}`),
+        fetch(`https://tonapi.io/v2/accounts/${encoded}/jettons?currencies=usd`),
+        fetch(`https://tonapi.io/v2/accounts/${encoded}/nfts?limit=1000`),
+        fetch("https://tonapi.io/v2/rates?tokens=ton&currencies=usd")
+      ]);
+
+      if (!accRes.ok) {
+        throw new Error("Адрес не найден или указан некорректно.");
+      }
+
+      const accData = await accRes.json();
+      const rawAddress = accData.address;
+      const jettonsData = jettonsRes.ok ? await jettonsRes.json() : { balances: [] };
+      const nftsData = nftsRes.ok ? await nftsRes.json() : { nft_items: [] };
+      const ratesData = ratesRes.ok ? await ratesRes.json() : {};
+
+      const tonPriceUsd = Number(ratesData?.rates?.TON?.prices?.USD || 0);
+      const tonBalance = Number(accData.balance || 0) / 1e9;
+      const tonUsd = tonBalance * tonPriceUsd;
+
+      // Обработка жетонов
+      const jettonInfo = new Map();
+      jettonInfo.set("0:b113a994b5024a16719f69139328eb759596c38a25f59028b146fecdc3621dfe", {
+        priceUsd: 1,
+        decimals: 6,
+        symbol: "USDT"
       });
 
-      // Движение источников света и камеры
-      blueLight1.position.x = Math.sin(t * 0.6) * 2.6;
-      blueLight1.position.y = 1.6 + Math.cos(t * 0.5) * 1.2;
-      blueLight2.position.x = Math.cos(t * 0.55) * 2.6;
+      let jettonsUsd = 0;
+      let pricedJettons = 0;
+      const balances = jettonsData.balances || [];
 
-      particles.rotation.y = t * 0.03;
-      particles.position.y = Math.sin(t * 0.3) * 0.15;
+      for (const item of balances) {
+        const jAddr = item.jetton?.address;
+        const decimals = Number(item.jetton?.decimals ?? 9);
+        const amount = Number(item.balance || 0) / Math.pow(10, decimals);
+        let priceUsd = Number(item.price?.prices?.USD ?? item.price?.prices?.usd ?? 0);
 
-      camera.position.x = Math.sin(t * 0.28) * 0.35;
-      camera.position.y = 0.3 + Math.cos(t * 0.22) * 0.2;
-      camera.lookAt(0, -0.1, 0);
+        if (priceUsd === 0 && (item.jetton?.symbol === "USD₮" || item.jetton?.symbol === "USDT")) {
+          priceUsd = 1;
+        }
 
-      renderer.render(scene, camera);
+        if (jAddr) {
+          jettonInfo.set(jAddr, {
+            priceUsd,
+            decimals,
+            symbol: item.jetton?.symbol || "TOKEN"
+          });
+        }
+
+        const valUsd = amount * priceUsd;
+        if (valUsd > 0) {
+          jettonsUsd += valUsd;
+          pricedJettons += 1;
+        }
+      }
+
+      // Обработка NFT и оценка их стоимости
+      setProgress(24, "Оценка стоимости NFT и коллекций...");
+      spawnFloat("+NFT");
+
+      const rawNfts = (nftsData.nft_items || []).filter((item) => item.trust !== "blacklist");
+      const collectionAddrs = rawNfts.map((item) => item.collection?.address).filter(Boolean);
+      const floorMap = await fetchCollectionFloors(collectionAddrs);
+
+      let nftsTotalTon = 0;
+      let pricedNftsCount = 0;
+
+      const parsedNfts = rawNfts.map((item) => {
+        const name = item.metadata?.name || item.dns || `NFT #${item.index ?? ""}`;
+        const collectionName = item.collection?.name || "Без коллекции";
+        const colAddr = item.collection?.address;
+        const image =
+          item.previews?.[1]?.url ||
+          item.previews?.[0]?.url ||
+          item.metadata?.image ||
+          "";
+
+        let estTon = 0;
+        let priceSource = "";
+
+        // 1. Активная цена продажи на маркетплейсе из TonAPI
+        if (item.sale?.price?.value && (!item.sale.price.token_name || item.sale.price.token_name === "TON")) {
+          estTon = Number(item.sale.price.value) / 1e9;
+          priceSource = "Листинг";
+        }
+        // 2. Floor price коллекции
+        else if (colAddr && floorMap.has(colAddr)) {
+          estTon = floorMap.get(colAddr);
+          priceSource = "Floor";
+        }
+
+        if (estTon > 0) {
+          nftsTotalTon += estTon;
+          pricedNftsCount += 1;
+        }
+
+        return {
+          name,
+          collectionName,
+          image,
+          estTon,
+          estUsd: estTon * tonPriceUsd,
+          priceSource
+        };
+      });
+
+      // Сортируем NFT: сначала с оценкой по убыванию цены
+      parsedNfts.sort((a, b) => b.estTon - a.estTon);
+
+      const nftsTotalUsd = nftsTotalTon * tonPriceUsd;
+      const portfolioTotalUsd = tonUsd + jettonsUsd + nftsTotalUsd;
+      const portfolioTotalTon = tonPriceUsd > 0 ? portfolioTotalUsd / tonPriceUsd : tonBalance + nftsTotalTon;
+
+      // Глубокое сканирование истории транзакций (до 3000 событий)
+      setProgress(35, "Глубокое сканирование истории транзакций...");
+      spawnFloat("+DEEP SCAN");
+
+      const allEvents = [];
+      let beforeLt = null;
+      const maxPages = 30; // До 3000 событий
+
+      for (let page = 0; page < maxPages; page++) {
+        const url = new URL(`https://tonapi.io/v2/accounts/${encodeURIComponent(rawAddress)}/events`);
+        url.searchParams.set("limit", "100");
+        if (beforeLt) url.searchParams.set("before_lt", String(beforeLt));
+
+        let evRes = await fetch(url.toString());
+
+        // Защита от лимита запросов (HTTP 429)
+        if (evRes.status === 429) {
+          setProgress(
+            Math.min(35 + Math.round((page / maxPages) * 52), 88),
+            `Пауза API, продолжаем с ${allEvents.length} транзакций...`
+          );
+          await sleep(1300);
+          evRes = await fetch(url.toString());
+        }
+
+        if (!evRes.ok) break;
+
+        const evData = await evRes.json();
+        const events = evData.events || [];
+        if (!events.length) break;
+
+        allEvents.push(...events);
+        const pct = Math.min(35 + Math.round(((page + 1) / maxPages) * 52), 88);
+        setProgress(pct, `Просканировано событий: ${allEvents.length}...`);
+
+        if (!evData.next_from || events.length < 100) break;
+        beforeLt = evData.next_from;
+        await sleep(110);
+      }
+
+      // Сбор всех токенов из глубокой истории для подгрузки их курсов
+      const missingTokens = new Set();
+      for (const ev of allEvents) {
+        for (const act of ev.actions || []) {
+          if (act.type === "JettonTransfer" && act.JettonTransfer?.jetton?.address) {
+            const addr = act.JettonTransfer.jetton.address;
+            if (!jettonInfo.has(addr)) missingTokens.add(addr);
+          }
+          if (act.type === "JettonSwap") {
+            const mIn = act.JettonSwap?.jetton_master_in?.address;
+            const mOut = act.JettonSwap?.jetton_master_out?.address;
+            if (mIn && !jettonInfo.has(mIn)) missingTokens.add(mIn);
+            if (mOut && !jettonInfo.has(mOut)) missingTokens.add(mOut);
+          }
+        }
+      }
+
+      if (missingTokens.size > 0) {
+        setProgress(92, `Загрузка курсов для ${missingTokens.size} исторических токенов...`);
+        spawnFloat("+RATES");
+        const missingArr = Array.from(missingTokens);
+        for (let i = 0; i < missingArr.length; i += 80) {
+          const chunk = missingArr.slice(i, i + 80).join(",");
+          try {
+            const extraRatesRes = await fetch(
+              `https://tonapi.io/v2/rates?tokens=${encodeURIComponent(chunk)}&currencies=usd`
+            );
+            if (extraRatesRes.ok) {
+              const extraRatesJson = await extraRatesRes.json();
+              const ratesObj = extraRatesJson.rates || {};
+              for (const [addr, info] of Object.entries(ratesObj)) {
+                const p = Number(info?.prices?.USD || 0);
+                if (p > 0) {
+                  jettonInfo.set(addr, { priceUsd: p, decimals: 9, symbol: "TOKEN" });
+                }
+              }
+            }
+          } catch (_) {}
+        }
+      }
+
+      // Подсчет входящего и исходящего оборота
+      let incomingUsd = 0;
+      let outgoingUsd = 0;
+      let txCount = 0;
+
+      for (const ev of allEvents) {
+        let eventHasValue = false;
+        for (const act of ev.actions || []) {
+          if (act.status && act.status !== "ok") continue;
+
+          if (act.type === "TonTransfer" && act.TonTransfer) {
+            const t = act.TonTransfer;
+            const amountTon = Number(t.amount || 0) / 1e9;
+            const valUsd = amountTon * tonPriceUsd;
+            if (t.recipient?.address === rawAddress) {
+              incomingUsd += valUsd;
+              eventHasValue = true;
+            } else if (t.sender?.address === rawAddress) {
+              outgoingUsd += valUsd;
+              eventHasValue = true;
+            }
+          } else if (act.type === "JettonTransfer" && act.JettonTransfer) {
+            const t = act.JettonTransfer;
+            const jAddr = t.jetton?.address;
+            const decimals = Number(t.jetton?.decimals ?? 9);
+            const amount = Number(t.amount || 0) / Math.pow(10, decimals);
+            let priceUsd = jettonInfo.get(jAddr)?.priceUsd || 0;
+            if (priceUsd === 0 && (t.jetton?.symbol === "USD₮" || t.jetton?.symbol === "USDT")) {
+              priceUsd = 1;
+            }
+            const valUsd = amount * priceUsd;
+            if (t.recipient?.address === rawAddress) {
+              incomingUsd += valUsd;
+              eventHasValue = true;
+            } else if (t.sender?.address === rawAddress) {
+              outgoingUsd += valUsd;
+              eventHasValue = true;
+            }
+          } else if (act.type === "JettonSwap" && act.JettonSwap) {
+            const s = act.JettonSwap;
+            if (s.ton_in) {
+              outgoingUsd += (Number(s.ton_in) / 1e9) * tonPriceUsd;
+              eventHasValue = true;
+            }
+            if (s.ton_out) {
+              incomingUsd += (Number(s.ton_out) / 1e9) * tonPriceUsd;
+              eventHasValue = true;
+            }
+            if (s.jetton_master_in?.address && s.amount_in) {
+              const dec = Number(s.jetton_master_in.decimals ?? 9);
+              const p = jettonInfo.get(s.jetton_master_in.address)?.priceUsd || 0;
+              outgoingUsd += (Number(s.amount_in) / Math.pow(10, dec)) * p;
+              eventHasValue = true;
+            }
+            if (s.jetton_master_out?.address && s.amount_out) {
+              const dec = Number(s.jetton_master_out.decimals ?? 9);
+              const p = jettonInfo.get(s.jetton_master_out.address)?.priceUsd || 0;
+              incomingUsd += (Number(s.amount_out) / Math.pow(10, dec)) * p;
+              eventHasValue = true;
+            }
+          } else if (act.type === "NftPurchase" && act.NftPurchase) {
+            const np = act.NftPurchase;
+            const priceTon = Number(np.amount?.value || 0) / 1e9;
+            const valUsd = priceTon * tonPriceUsd;
+            if (np.buyer?.address === rawAddress) {
+              outgoingUsd += valUsd;
+              eventHasValue = true;
+            } else if (np.seller?.address === rawAddress) {
+              incomingUsd += valUsd;
+              eventHasValue = true;
+            }
+          }
+        }
+        if (eventHasValue) txCount += 1;
+      }
+
+      const totalTurnoverUsd = incomingUsd + outgoingUsd;
+      const totalTurnoverTon = tonPriceUsd > 0 ? totalTurnoverUsd / tonPriceUsd : 0;
+
+      setProgress(100, "Готово", "Сканирование завершено");
+      await sleep(200);
+
+      return {
+        tonPriceUsd,
+        portfolio: {
+          totalUsd: portfolioTotalUsd,
+          totalTon: portfolioTotalTon,
+          tonBalance,
+          tonUsd,
+          jettonsUsd,
+          totalJettonsCount: balances.length,
+          pricedJettons,
+          nftsTotalTon,
+          nftsTotalUsd,
+          nftsCount: parsedNfts.length
+        },
+        nfts: {
+          items: parsedNfts,
+          totalTon: nftsTotalTon,
+          totalUsd: nftsTotalUsd,
+          pricedCount: pricedNftsCount
+        },
+        turnover: {
+          totalUsd: totalTurnoverUsd,
+          totalTon: totalTurnoverTon,
+          incomingUsd,
+          outgoingUsd,
+          txCount,
+          fetchedEventsCount: allEvents.length,
+          isCapped: allEvents.length >= maxPages * 100
+        }
+      };
     }
 
-    animate();
+    function renderView(mode) {
+      if (!scanReport) return;
+
+      if (mode === "portfolio") {
+        const p = scanReport.portfolio;
+        metricLabel.textContent = "Общая стоимость кошелька";
+        animateValue(metricMain, p.totalUsd);
+        metricSub.textContent = `${formatTon(p.totalTon)} (1 TON = $${scanReport.tonPriceUsd.toFixed(2)})`;
+
+        dynamicContent.innerHTML = `
+          <div class="rows">
+            <div class="row">
+              <span class="row-label">Нативный TON</span>
+              <span class="row-val">${formatTon(p.tonBalance)} (${formatUsd(p.tonUsd)})</span>
+            </div>
+            <div class="row">
+              <span class="row-label">Жетоны (${p.pricedJettons}/${p.totalJettonsCount})</span>
+              <span class="row-val positive">${formatUsd(p.jettonsUsd)}</span>
+            </div>
+            <div class="row">
+              <span class="row-label">NFT и коллекции (${p.nftsCount})</span>
+              <span class="row-val">${formatTon(p.nftsTotalTon)} (${formatUsd(p.nftsTotalUsd)})</span>
+            </div>
+          </div>
+        `;
+
+        metaNote.textContent =
+          "Суммарная оценка баланса TON, ликвидных жетонов и NFT по текущему floor price коллекций.";
+      } else if (mode === "nfts") {
+        const n = scanReport.nfts;
+        metricLabel.textContent = `Оценка NFT (${n.items.length} шт.)`;
+        animateValue(metricMain, n.totalUsd);
+        metricSub.textContent = `${formatTon(n.totalTon)} (оценено: ${n.pricedCount} из ${n.items.length})`;
+
+        if (!n.items.length) {
+          dynamicContent.innerHTML = `<div class="nft-list"><div class="empty-state">На кошельке не найдено NFT</div></div>`;
+        } else {
+          const cardsHtml = n.items
+            .map((item) => {
+              const imgHtml = item.image
+                ? `<img class="nft-thumb" src="${escapeHtml(item.image)}" alt="" loading="lazy" onerror="this.outerHTML='<div class=\\'nft-thumb-fallback\\'><svg width=\\'16\\' height=\\'16\\' viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'2\\'><rect x=\\'3\\' y=\\'3\\' width=\\'18\\' height=\\'18\\' rx=\\'3\\'/><circle cx=\\'8.5\\' cy=\\'8.5\\' r=\\'1.5\\'/><path d=\\'M21 15l-5-5L5 21\\'/></svg></div>'" />`
+                : `<div class="nft-thumb-fallback"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>`;
+
+              const priceHtml =
+                item.estTon > 0
+                  ? `<div class="nft-price">
+                       <span class="nft-price-ton">~${item.estTon.toFixed(2)} TON</span>
+                       <span class="nft-price-usd">${formatUsd(item.estUsd)} · ${escapeHtml(item.priceSource)}</span>
+                     </div>`
+                  : `<div class="nft-price"><span class="nft-unpriced">Нет флора</span></div>`;
+
+              return `
+                <div class="nft-item">
+                  <div class="nft-left">
+                    ${imgHtml}
+                    <div class="nft-meta">
+                      <div class="nft-name">${escapeHtml(item.name)}</div>
+                      <div class="nft-col">${escapeHtml(item.collectionName)}</div>
+                    </div>
+                  </div>
+                  ${priceHtml}
+                </div>
+              `;
+            })
+            .join("");
+
+          dynamicContent.innerHTML = `<div class="nft-list">${cardsHtml}</div>`;
+        }
+
+        metaNote.textContent =
+          "Стоимость NFT рассчитывается по минимальной цене коллекции (Floor) или активному ордеру на продажу.";
+      } else {
+        const t = scanReport.turnover;
+        metricLabel.textContent = "Общий оборот по транзакциям";
+        animateValue(metricMain, t.totalUsd);
+        metricSub.textContent = `${formatTon(t.totalTon)}`;
+
+        dynamicContent.innerHTML = `
+          <div class="rows">
+            <div class="row">
+              <span class="row-label">Получено (входящие)</span>
+              <span class="row-val positive">+${formatUsd(t.incomingUsd)}</span>
+            </div>
+            <div class="row">
+              <span class="row-label">Отправлено (исходящие)</span>
+              <span class="row-val">${formatUsd(t.outgoingUsd)}</span>
+            </div>
+            <div class="row">
+              <span class="row-label">Учтено операций</span>
+              <span class="row-val">${t.txCount}${t.isCapped ? ` (глубина ${t.fetchedEventsCount})` : ""}</span>
+            </div>
+          </div>
+        `;
+
+        metaNote.textContent = t.isCapped
+          ? `Проанализированы последние ${t.fetchedEventsCount} событий (переводы TON, жетонов, свапы и покупки NFT).`
+          : `Проанализирована вся история (${t.fetchedEventsCount} событий) по актуальному курсу активов.`;
+      }
+    }
+
+    async function runScan() {
+      const addr = addressInput.value.trim();
+      errorBox.classList.remove("active");
+      resultBox.classList.remove("active");
+
+      if (!addr) {
+        errorBox.textContent = "Укажите адрес TON кошелька или .ton домен.";
+        errorBox.classList.add("active");
+        return;
+      }
+
+      scanBtn.disabled = true;
+      scanBox.classList.add("active");
+
+      try {
+        scanReport = await analyzeWallet(addr);
+        nftTabBtn.textContent = `NFT (${scanReport.nfts.items.length})`;
+        renderView(currentMode);
+        resultBox.classList.add("active");
+      } catch (err) {
+        errorBox.textContent = err.message || "Не удалось получить данные по адресу.";
+        errorBox.classList.add("active");
+      } finally {
+        scanBox.classList.remove("active");
+        scanBtn.disabled = false;
+      }
+    }
+
+    scanBtn.addEventListener("click", runScan);
   </script>
 </body>
 </html>
